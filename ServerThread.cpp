@@ -95,7 +95,6 @@ void LaptopFactory::ProductionAdminThread() {
         erq.pop();
         ul.unlock();
 
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
         // fill in record
         if (req->type == 1) {
             MapOp ops = req->ops;
