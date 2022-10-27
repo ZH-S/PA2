@@ -14,7 +14,10 @@ void ServerStorage::place_order(int customer_id, int latest_number_of_customer) 
 
 int ServerStorage::read_record(int customer_id) {
     lock.readLock();
-    if (!customer_record.count(customer_id)) return -1;
+    if (!customer_record.count(customer_id)) {
+        lock.readUnlock();
+        return -1;
+    }
     int rec = customer_record[customer_id];
     lock.readUnlock();
     return rec;

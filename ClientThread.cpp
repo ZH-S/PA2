@@ -2,6 +2,7 @@
 #include "Messages.h"
 
 #include <iostream>
+#include <thread>
 
 ClientThreadClass::ClientThreadClass() {}
 
@@ -27,6 +28,7 @@ void ClientThreadClass::ThreadBody(std::string ip, int port, int id, int orders,
     }
     for (int i = 0; i < num_orders; i++) {
         LaptopOrder order;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         timer.Start();
         switch (laptop_type) {
             case 1: {

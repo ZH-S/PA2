@@ -1,5 +1,4 @@
 #include <cstring>
-#include <iostream>
 #include "ClientStub.h"
 
 ClientStub::ClientStub() {}

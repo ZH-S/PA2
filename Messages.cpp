@@ -195,7 +195,7 @@ void CustomerRecord::Marshal(char *buffer) {
 }
 
 void ReplicationRequest::Marshal(char *buffer) {
-    int idc = -2;
+
     int net_factory_id = htonl(factory_id);
     int net_committed_index = htonl(committed_index);
     int net_last_index = htonl(last_index);
@@ -204,8 +204,6 @@ void ReplicationRequest::Marshal(char *buffer) {
     int net_arg2 = htonl(operation.arg2);
     int offset = 0;
 
-    memcpy(buffer + offset, &idc, sizeof(idc));
-    offset += sizeof(idc);
     memcpy(buffer + offset, &net_factory_id, sizeof(net_factory_id));
     offset += sizeof(net_factory_id);
     memcpy(buffer + offset, &net_committed_index, sizeof(net_committed_index));
@@ -217,10 +215,14 @@ void ReplicationRequest::Marshal(char *buffer) {
     memcpy(buffer + offset, &net_arg1, sizeof(net_opcode));
     offset += sizeof(net_arg1);
     memcpy(buffer + offset, &net_arg2, sizeof(net_arg1));
+
+    ReplicationRequest request;
+    request.Unmarshal(buffer);
+    std::cout << request << std::endl;
 }
 
 int ReplicationRequest::Unmarshal(char *buffer) {
-    int idc;
+
     int net_factory_id;
     int net_committed_index;
     int net_last_index;
@@ -229,8 +231,6 @@ int ReplicationRequest::Unmarshal(char *buffer) {
     int net_arg2;
     int offset = 0;
 
-    memcpy(&idc, buffer + offset, sizeof(idc));
-    offset += sizeof(idc);
     memcpy(&net_factory_id, buffer + offset, sizeof(net_factory_id));
     offset += sizeof(net_factory_id);
     memcpy(&net_committed_index, buffer + offset, sizeof(net_committed_index));
@@ -243,19 +243,19 @@ int ReplicationRequest::Unmarshal(char *buffer) {
     offset += sizeof(net_arg1);
     memcpy(&net_arg2, buffer + offset, sizeof(net_arg2));
 
-    idc = ntohl(idc);
-    factory_id = ntohl(factory_id);
+    factory_id = ntohl(net_factory_id);
     committed_index = ntohl(net_committed_index);
     last_index = ntohl(net_last_index);
-    int opcode = ntohl(net_opcode);
-    int arg1 = ntohl(net_arg1);
-    int arg2 = ntohl(net_arg2);
-    operation = {opcode, arg1, arg2};
-
-    return idc;
+    operation.opcode = ntohl(net_opcode);
+    operation.arg1 = ntohl(net_arg1);
+    operation.arg2 = ntohl(net_arg2);
+    return 2;
 }
 
-bool ReplicationRequest::IsValid() {
-    return idc == -2;
+std::ostream &operator<<(std::ostream &os, const ReplicationRequest &request) {
+    os << " factory_id: " << request.factory_id << " committed_index: "
+       << request.committed_index << " last_index: " << request.last_index << " operation: " << request.operation.opcode
+       << "\t" << request.operation.arg1 << "\t" << request.operation.arg2;
+    return os;
 }
 

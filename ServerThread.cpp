@@ -17,7 +17,9 @@ LaptopInfo LaptopFactory::CreateRegularLaptop(LaptopOrder order, int engineer_id
 
     std::unique_ptr<AdminRequest> req = std::unique_ptr<AdminRequest>(new AdminRequest);
     req->type = 1;
+    req->ops = {1, order.GetCustomerId(), order.GetOrderNumber()};
     req->promise = std::move(prom);
+
 
     erq_lock.lock();
     erq.push(std::move(req));
@@ -25,7 +27,6 @@ LaptopInfo LaptopFactory::CreateRegularLaptop(LaptopOrder order, int engineer_id
     erq_lock.unlock();
 
     CustomerRecord record = fut.get();
-    std::cout << record.getLastOrder() << std::endl;
     return laptop;
 }
 
@@ -49,7 +50,7 @@ void LaptopFactory::EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
 
     while (true) {
         if (status == 2) { // IFA operation
-            stub.ReceiveReplicationRequest();
+            req = stub.ReceiveReplicationRequest();
             this->primary_id = req.getFactoryId();
             this->committed_index = req.getCommittedIndex();
             this->last_index = req.getLastIndex();
@@ -59,7 +60,7 @@ void LaptopFactory::EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
             LaptopOrder ord;
             ord.SetOrder(cid, last_ordn, 4);
             stub.SendReplicationResult(ord);
-            std::cout << "success in replicate cid:" << cid << " ,oid " << last_ordn << std::endl;
+            std::cout << "success in replicate " << req << std::endl;
         } else if (status == 1) { // Engineer operation
             order = stub.ReceiveOrderRequest();
             if (!order.IsValid()) {
@@ -97,23 +98,22 @@ void LaptopFactory::ProductionAdminThread() {
         // fill in record
         if (req->type == 1) {
             MapOp ops = req->ops;
-            server_storage.place_order(ops.arg1, ops.arg2);
-            std::cout << "ops 1:" << ops.arg1 << ", ops 2: " << ops.arg2 << std::endl;
             if (this->factory_id != this->primary_id || this->primary_id == -1) {
                 startConnection();
             }
             this->last_index = server_storage.getIdx();
             ReplicationRequest request = ReplicationRequest(this->factory_id, this->committed_index,
                                                             this->last_index,
-                                                            {1, 1, 1});
+                                                            {1, ops.arg1, ops.arg2});
             startReplication(request);
+            server_storage.place_order(ops.arg1, ops.arg2);
+            this->committed_index = this->last_index;
             req->promise.set_value(req->record);
         } else {
             int last_order = server_storage.read_record(req->record.getCustomerId());
             req->record.setLastOrder(last_order);
             req->promise.set_value(req->record);
         }
-
     }
 }
 
