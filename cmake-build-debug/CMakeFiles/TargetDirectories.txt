@@ -1,0 +1,4 @@
+/home/work/CLionProjects/PA2/cmake-build-debug/CMakeFiles/client.dir
+/home/work/CLionProjects/PA2/cmake-build-debug/CMakeFiles/server.dir
+/home/work/CLionProjects/PA2/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/work/CLionProjects/PA2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
