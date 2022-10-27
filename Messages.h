@@ -122,6 +122,7 @@ public:
 
 class ReplicationRequest {
 private:
+    int idc;
     int factory_id;
     int committed_index;
     int last_index;
@@ -154,6 +155,8 @@ public:
     int Unmarshal(char *buffer);
 
     int Size() { return sizeof(factory_id) + sizeof(committed_index) + sizeof(last_index) + sizeof(MapOp); };
+
+    bool IsValid();
 };
 
 struct RequestType {

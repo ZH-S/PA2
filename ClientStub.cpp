@@ -1,4 +1,5 @@
 #include <cstring>
+#include <iostream>
 #include "ClientStub.h"
 
 ClientStub::ClientStub() {}
@@ -7,15 +8,14 @@ int ClientStub::Init(std::string ip, int port) {
     return socket.Init(ip, port);
 }
 
-void ClientStub::SendIdentification() {
+void ClientStub::SendIdentification(int stat) {
     char buf[256];
-    int status = 1;
+    int status = stat;
     std::memcpy(buf, &status, sizeof(status));
     socket.Send(buf, sizeof(status), 0);
 }
 
 LaptopInfo ClientStub::OrderLaptop(LaptopOrder order) {
-    SendIdentification();
     LaptopInfo info;
     char buffer[32];
     int size;
@@ -31,7 +31,6 @@ LaptopInfo ClientStub::OrderLaptop(LaptopOrder order) {
 }
 
 CustomerRecord ClientStub::ReadRecord(LaptopOrder request) {
-    SendIdentification();
     CustomerRecord record;
     char buffer[32];
     int size;
@@ -46,3 +45,14 @@ CustomerRecord ClientStub::ReadRecord(LaptopOrder request) {
     return record;
 }
 
+
+void ClientStub::startReplication(ReplicationRequest request) {
+    LaptopOrder ord;
+    char buf[128];
+    request.Marshal(buf);
+    if (socket.Send(buf, request.Size(), 0)) {
+        if (socket.Recv(buf, ord.Size(), 0)) {
+            ord.Unmarshal(buf);
+        }
+    }
+}

@@ -7,12 +7,14 @@
 #include <queue>
 #include <thread>
 #include <utility>
+#include <list>
 
 #include "Messages.h"
 #include "ServerSocket.h"
 #include "ServerStorage.h"
 #include "ClientSocket.h"
 #include "ServerStub.h"
+#include "ClientStub.h"
 
 struct Peer {
     int server_id;
@@ -36,7 +38,7 @@ private:
     int factory_id;
 
     std::vector<Peer> peer_list;
-    std::map<int, ClientSocket> socket_list;
+    std::list<std::unique_ptr<ClientStub>> stubs;
     ServerStorage server_storage;
     std::queue<std::unique_ptr<AdminRequest>> erq;
     std::mutex erq_lock;
@@ -48,6 +50,7 @@ private:
 
     CustomerRecord GetCustomerRecord(LaptopOrder order, int engineer_id);
 
+    void startConnection();
 
 public:
 
@@ -62,13 +65,9 @@ public:
         this->peer_list = std::move(peerList);
     };
 
-    void startConnection();
-
     void EngineerThread(std::unique_ptr<ServerSocket> socket, int id);
 
     void ProductionAdminThread();
-
-    void SendStatusInfo();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

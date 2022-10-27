@@ -158,6 +158,12 @@ build CMakeFiles/server.dir/ServerSocket.cpp.o: CXX_COMPILER__server_Debug /home
   OBJECT_DIR = CMakeFiles/server.dir
   OBJECT_FILE_DIR = CMakeFiles/server.dir
 
+build CMakeFiles/server.dir/ClientStub.cpp.o: CXX_COMPILER__server_Debug /home/work/CLionProjects/PA2/ClientStub.cpp || cmake_object_order_depends_target_server
+  DEP_FILE = CMakeFiles/server.dir/ClientStub.cpp.o.d
+  FLAGS = -g -std=gnu++11
+  OBJECT_DIR = CMakeFiles/server.dir
+  OBJECT_FILE_DIR = CMakeFiles/server.dir
+
 build CMakeFiles/server.dir/ClientSocket.cpp.o: CXX_COMPILER__server_Debug /home/work/CLionProjects/PA2/ClientSocket.cpp || cmake_object_order_depends_target_server
   DEP_FILE = CMakeFiles/server.dir/ClientSocket.cpp.o.d
   FLAGS = -g -std=gnu++11
@@ -172,7 +178,7 @@ build CMakeFiles/server.dir/ClientSocket.cpp.o: CXX_COMPILER__server_Debug /home
 #############################################
 # Link the executable server
 
-build server: CXX_EXECUTABLE_LINKER__server_Debug CMakeFiles/server.dir/Socket.cpp.o CMakeFiles/server.dir/Messages.cpp.o CMakeFiles/server.dir/ServerThread.cpp.o CMakeFiles/server.dir/ServerStub.cpp.o CMakeFiles/server.dir/ServerMain.cpp.o CMakeFiles/server.dir/ServerStorage.cpp.o CMakeFiles/server.dir/ServerSocket.cpp.o CMakeFiles/server.dir/ClientSocket.cpp.o
+build server: CXX_EXECUTABLE_LINKER__server_Debug CMakeFiles/server.dir/Socket.cpp.o CMakeFiles/server.dir/Messages.cpp.o CMakeFiles/server.dir/ServerThread.cpp.o CMakeFiles/server.dir/ServerStub.cpp.o CMakeFiles/server.dir/ServerMain.cpp.o CMakeFiles/server.dir/ServerStorage.cpp.o CMakeFiles/server.dir/ServerSocket.cpp.o CMakeFiles/server.dir/ClientStub.cpp.o CMakeFiles/server.dir/ClientSocket.cpp.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/server.dir
   POST_BUILD = :

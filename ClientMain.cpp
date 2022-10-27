@@ -50,6 +50,5 @@ int main(int argc, char *argv[]) {
         timer.Merge(cls->GetTimer());
     }
     timer.PrintStats();
-
     return 1;
 }

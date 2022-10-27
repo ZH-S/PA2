@@ -1,4 +1,5 @@
 #include <cstring>
+#include <iostream>
 #include "ServerStub.h"
 
 ServerStub::ServerStub() {}
@@ -17,7 +18,7 @@ int ServerStub::ReceiveStatusInfo() {
 }
 
 LaptopOrder ServerStub::ReceiveOrderRequest() {
-    char buffer[128];
+    char buffer[32];
     LaptopOrder order;
     if (socket->Recv(buffer, order.Size(), 0)) {
         order.Unmarshal(buffer);
@@ -26,37 +27,13 @@ LaptopOrder ServerStub::ReceiveOrderRequest() {
 }
 
 ReplicationRequest ServerStub::ReceiveReplicationRequest() {
-    char buffer[128];
+    char buffer[32];
     ReplicationRequest request;
     if (socket->Recv(buffer, request.Size(), 0)) {
         request.Unmarshal(buffer);
     }
     return request;
 }
-
-/**RequestType ServerStub::Receive() {
-    char buffer[128];
-    int type = -1;
-    LaptopOrder order;
-    ReplicationRequest request;
-    if (socket->Recv(buffer, order.Size(), 0)) {
-        type = request.Unmarshal(buffer);
-        if (type != -2) {
-            type = -1;
-            order.Unmarshal(buffer);
-        } else {
-            char buf[128];
-            int size = request.Size() - order.Size();
-            socket->Recv(buf, size, 0);
-            std::memcpy(buffer + order.Size(), buf, size);
-        }
-    }
-    RequestType y;
-    y.type = type;
-    y.request = request;
-    y.order = order;
-    return y;
-}*/
 
 int ServerStub::SendLaptop(LaptopInfo info) {
     char buffer[32];

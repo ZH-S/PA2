@@ -243,6 +243,7 @@ int ReplicationRequest::Unmarshal(char *buffer) {
     offset += sizeof(net_arg1);
     memcpy(&net_arg2, buffer + offset, sizeof(net_arg2));
 
+    idc = ntohl(idc);
     factory_id = ntohl(factory_id);
     committed_index = ntohl(net_committed_index);
     last_index = ntohl(net_last_index);
@@ -252,5 +253,9 @@ int ReplicationRequest::Unmarshal(char *buffer) {
     operation = {opcode, arg1, arg2};
 
     return idc;
+}
+
+bool ReplicationRequest::IsValid() {
+    return idc == -2;
 }
 

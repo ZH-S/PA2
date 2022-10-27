@@ -13,6 +13,7 @@ void ClientThreadClass::ThreadBody(std::string ip, int port, int id, int orders,
         std::cout << "Thread " << customer_id << " failed to connect" << std::endl;
         return;
     }
+    stub.SendIdentification(1);
     if (laptop_type == 2) {
         LaptopOrder order;
         order.SetOrder(customer_id, -1, laptop_type);

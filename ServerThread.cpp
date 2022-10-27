@@ -1,27 +1,31 @@
 #include <iostream>
 #include <memory>
-#include <cstring>
 
 #include "ServerThread.h"
 #include "ServerStub.h"
 #include "ServerStorage.h"
+#include "ClientStub.h"
 
 
 LaptopInfo LaptopFactory::CreateRegularLaptop(LaptopOrder order, int engineer_id) {
     LaptopInfo laptop;
     laptop.CopyOrder(order);
     laptop.SetEngineerId(engineer_id);
-    laptop.SetAdminId(1);
+
+    std::promise<CustomerRecord> prom;
+    std::future<CustomerRecord> fut = prom.get_future();
 
     std::unique_ptr<AdminRequest> req = std::unique_ptr<AdminRequest>(new AdminRequest);
     req->type = 1;
-    req->ops = {1, order.GetCustomerId(), order.GetOrderNumber()};
+    req->promise = std::move(prom);
 
     erq_lock.lock();
     erq.push(std::move(req));
     erq_cv.notify_one();
     erq_lock.unlock();
 
+    CustomerRecord record = fut.get();
+    std::cout << record.getLastOrder() << std::endl;
     return laptop;
 }
 
@@ -35,16 +39,17 @@ void LaptopFactory::EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
     int engineer_id = id;
     LaptopOrder order;
     LaptopInfo laptop;
+    ReplicationRequest req;
     CustomerRecord record;
     ServerStub stub;
     int laptop_type;
     stub.Init(std::move(socket));
+    int status = stub.ReceiveStatusInfo();
+    std::cout << "status " << status << std::endl;
 
     while (true) {
-        int status = stub.ReceiveStatusInfo();
-        std::cout << "status " << status << std::endl;
         if (status == 2) { // IFA operation
-            ReplicationRequest req = stub.ReceiveReplicationRequest();
+            stub.ReceiveReplicationRequest();
             this->primary_id = req.getFactoryId();
             this->committed_index = req.getCommittedIndex();
             this->last_index = req.getLastIndex();
@@ -54,8 +59,8 @@ void LaptopFactory::EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
             LaptopOrder ord;
             ord.SetOrder(cid, last_ordn, 4);
             stub.SendReplicationResult(ord);
-            std::cout << "success in replicate cid:" << cid << " ,oid" << last_ordn << std::endl;
-        } else { // Engineer operation
+            std::cout << "success in replicate cid:" << cid << " ,oid " << last_ordn << std::endl;
+        } else if (status == 1) { // Engineer operation
             order = stub.ReceiveOrderRequest();
             if (!order.IsValid()) {
                 return;
@@ -87,7 +92,6 @@ void LaptopFactory::ProductionAdminThread() {
         }
         auto req = std::move(erq.front());
         erq.pop();
-
         ul.unlock();
 
         // fill in record
@@ -95,23 +99,21 @@ void LaptopFactory::ProductionAdminThread() {
             MapOp ops = req->ops;
             server_storage.place_order(ops.arg1, ops.arg2);
             std::cout << "ops 1:" << ops.arg1 << ", ops 2: " << ops.arg2 << std::endl;
+            if (this->factory_id != this->primary_id || this->primary_id == -1) {
+                startConnection();
+            }
+            this->last_index = server_storage.getIdx();
+            ReplicationRequest request = ReplicationRequest(this->factory_id, this->committed_index,
+                                                            this->last_index,
+                                                            {1, 1, 1});
+            startReplication(request);
+            req->promise.set_value(req->record);
         } else {
             int last_order = server_storage.read_record(req->record.getCustomerId());
             req->record.setLastOrder(last_order);
             req->promise.set_value(req->record);
         }
 
-        std::mutex mtx;
-        // replication
-        mtx.lock();
-        if (this->factory_id != this->primary_id || this->primary_id == -1) {
-            startConnection(); //TODO need to handle the exception by failure
-        }
-        this->last_index = server_storage.getIdx();
-        ReplicationRequest request = ReplicationRequest(this->factory_id, this->committed_index, this->last_index,
-                                                        {1, req->ops.arg1, req->ops.arg2});
-        startReplication(request);
-        mtx.unlock();
     }
 }
 
@@ -120,33 +122,16 @@ void LaptopFactory::startConnection() {
     this->primary_id = this->factory_id;
     for (int i = 0; i < this->peer_list.size(); i++) {
         Peer p = this->peer_list[i];
-        ClientSocket sock;
-        sock.Init(p.ip_addr, p.port);
-        this->socket_list[p.server_id] = sock;
+        std::unique_ptr<ClientStub> stub = std::unique_ptr<ClientStub>(new ClientStub);
+        stub->Init(p.ip_addr, p.port);
+        stub->SendIdentification(2);
+        stubs.push_back(std::move(stub));
     }
 }
 
 void LaptopFactory::startReplication(ReplicationRequest request) {
-    std::cout << "replication success" << std::endl;
-    LaptopOrder ord;
-    for (auto it = socket_list.begin(); it != socket_list.end(); ++it) {
-        ClientSocket sock = it->second;
-        int status = 2;
-        char buffer[16];
-        std::cout << "buffer " << buffer << std::endl;
-        std::memcpy(buffer, &status, sizeof(status));
-        sock.Send(buffer, sizeof(status), 0);
-
-        char buf[128];
-        request.Marshal(buf);
-        if (sock.Send(buf, request.Size(), 0)) {
-            if (sock.Recv(buf, ord.Size(), 0)) {
-                ord.Unmarshal(buf);
-            }
-        }
+    for (auto it = stubs.begin(); it != stubs.end(); ++it) {
+        auto stub = it->get();
+        stub->startReplication(request);
     }
-    std::cout << "replication success" << std::endl;
 }
-
-
-

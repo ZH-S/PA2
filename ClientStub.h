@@ -14,7 +14,8 @@ public:
 	int Init(std::string ip, int port);
 	LaptopInfo OrderLaptop(LaptopOrder order);
     CustomerRecord ReadRecord(LaptopOrder request);
-    void SendIdentification();
+    void SendIdentification(int stat);
+    void startReplication(ReplicationRequest request);
 };
 
 
