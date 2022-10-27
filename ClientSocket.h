@@ -12,6 +12,7 @@ public:
 	~ClientSocket() {}
 
 	int Init(std::string ip, int port);
+
 };
 
 

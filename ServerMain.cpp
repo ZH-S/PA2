@@ -16,13 +16,14 @@ int main(int argc, char *argv[]) {
     std::unique_ptr<ServerSocket> new_socket;
     std::vector<std::thread> thread_vector;
 
-    if (argc < 7) {
+    if (argc < 4) {
         std::cout << "not enough arguments for starting, you should have at least one Peer" << std::endl;
         std::cout << argv[0] << "[port #] [unique ID] [# peers] (repeat [ID] [IP] [port #])" << std::endl;
         return 0;
     }
-    if ((argc - 4) / 3 != atoi(argv[3]) || (argc - 4) % 3 != 0) {
-        std::cout << "invalid argument length or setting, please check Peer setting for start" << std::endl;
+    int peer_number = atoi(argv[3]);
+    if ((argc - 4) / 3 != peer_number || (argc - 4) % 3 != 0) {
+        std::cout << "invalid argument length to setting, please check Peer setting for start" << std::endl;
         return 0;
     }
 
