@@ -6,13 +6,17 @@
 #include "Socket.h"
 
 
-class ClientSocket: public Socket {
+class ClientSocket : public Socket {
+private:
+
 public:
-	ClientSocket() {}
-	~ClientSocket() {}
+    ClientSocket() {}
 
-	int Init(std::string ip, int port);
+    ~ClientSocket() {}
 
+    int Init(std::string ip, int port);
+
+    bool isValid() { return valid; }
 };
 
 

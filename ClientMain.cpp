@@ -33,6 +33,14 @@ int main(int argc, char *argv[]) {
     laptop_type = atoi(argv[5]);
 
 
+    if (laptop_type == 2) {
+        auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
+        std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls, ip, port, num_customers, num_orders,
+                                  laptop_type);
+        client_thread.join();
+        return 1;
+    }
+
     timer.Start();
     for (int i = 0; i < num_customers; i++) {
         auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());

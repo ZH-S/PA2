@@ -1,9 +1,16 @@
 #include <cstring>
+#include <utility>
 #include "ClientStub.h"
 
 ClientStub::ClientStub() {}
 
-int ClientStub::Init(std::string ip, int port) {
+int ClientStub::Init(std::string Ip, int Port) {
+    this->ip = std::move(Ip);
+    this->port = Port;
+    return socket.Init(ip, port);
+}
+
+int ClientStub::Reconnect() {
     return socket.Init(ip, port);
 }
 

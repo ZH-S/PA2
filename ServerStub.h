@@ -25,6 +25,8 @@ public:
     ReplicationRequest ReceiveReplicationRequest();
 
     int ReceiveStatusInfo();
+
+    bool isValid() { return socket->IsValid(); }
 };
 
 #endif // end of #ifndef __SERVER_STUB_H__

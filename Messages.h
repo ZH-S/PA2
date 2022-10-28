@@ -123,6 +123,7 @@ public:
 
 class ReplicationRequest {
 private:
+    int vid;
     int factory_id;
     int committed_index;
     int last_index;
@@ -154,9 +155,11 @@ public:
 
     int Unmarshal(char *buffer);
 
-    int Size() { return sizeof(factory_id) + sizeof(committed_index) + sizeof(last_index) + sizeof(MapOp); };
+    int Size() {
+        return sizeof(vid) + sizeof(factory_id) + sizeof(committed_index) + sizeof(last_index) + sizeof(MapOp);
+    };
 
-    bool IsValid();
+    bool IsValid() { return vid == 1; };
 
     friend std::ostream &operator<<(std::ostream &os, const ReplicationRequest &request);
 };

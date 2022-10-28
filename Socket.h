@@ -6,28 +6,34 @@
 #include <sys/poll.h>
 #include <sys/select.h>
 
-#define NAGLE_ON	0
-#define NAGLE_OFF	1
+#define NAGLE_ON    0
+#define NAGLE_OFF    1
 
 class Socket {
 protected:
-	int fd_;
-	bool is_initialized_;
+    int fd_;
+    bool is_initialized_;
+    bool valid;
 
 private:
-	int nagle_;
+    int nagle_;
 
 public:
-	Socket();
-	virtual ~Socket();
+    Socket();
 
-	int Send(char *buffer, int size, int flags = 0);
-	int Recv(char *buffer, int size, int flags = 0);
+    virtual ~Socket();
 
-	int NagleOn(bool on_off);
-	bool IsNagleOn();
+    int Send(char *buffer, int size, int flags = 0);
 
-	void Close();
+    int Recv(char *buffer, int size, int flags = 0);
+
+    int NagleOn(bool on_off);
+
+    bool IsNagleOn();
+
+    bool IsValid() { return valid; }
+
+    void Close();
 };
 
 

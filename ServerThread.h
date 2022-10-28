@@ -68,6 +68,8 @@ public:
     void EngineerThread(std::unique_ptr<ServerSocket> socket, int id);
 
     void ProductionAdminThread();
+
+    void startRecovery();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__

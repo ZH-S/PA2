@@ -195,7 +195,8 @@ void CustomerRecord::Marshal(char *buffer) {
 }
 
 void ReplicationRequest::Marshal(char *buffer) {
-
+    vid = 1;
+    int net_vid = htonl(vid);
     int net_factory_id = htonl(factory_id);
     int net_committed_index = htonl(committed_index);
     int net_last_index = htonl(last_index);
@@ -204,6 +205,8 @@ void ReplicationRequest::Marshal(char *buffer) {
     int net_arg2 = htonl(operation.arg2);
     int offset = 0;
 
+    memcpy(buffer + offset, &net_vid, sizeof(net_factory_id));
+    offset += sizeof(net_vid);
     memcpy(buffer + offset, &net_factory_id, sizeof(net_factory_id));
     offset += sizeof(net_factory_id);
     memcpy(buffer + offset, &net_committed_index, sizeof(net_committed_index));
@@ -222,7 +225,7 @@ void ReplicationRequest::Marshal(char *buffer) {
 }
 
 int ReplicationRequest::Unmarshal(char *buffer) {
-
+    int net_vid;
     int net_factory_id;
     int net_committed_index;
     int net_last_index;
@@ -231,6 +234,8 @@ int ReplicationRequest::Unmarshal(char *buffer) {
     int net_arg2;
     int offset = 0;
 
+    memcpy(&net_vid, buffer + offset, sizeof(net_vid));
+    offset += sizeof(net_vid);
     memcpy(&net_factory_id, buffer + offset, sizeof(net_factory_id));
     offset += sizeof(net_factory_id);
     memcpy(&net_committed_index, buffer + offset, sizeof(net_committed_index));
@@ -243,6 +248,7 @@ int ReplicationRequest::Unmarshal(char *buffer) {
     offset += sizeof(net_arg1);
     memcpy(&net_arg2, buffer + offset, sizeof(net_arg2));
 
+    vid = htonl(net_vid);
     factory_id = ntohl(net_factory_id);
     committed_index = ntohl(net_committed_index);
     last_index = ntohl(net_last_index);

@@ -51,6 +51,10 @@ void LaptopFactory::EngineerThread(std::unique_ptr<ServerSocket> socket, int id)
     while (true) {
         if (status == 2) { // IFA operation
             req = stub.ReceiveReplicationRequest();
+            if (!stub.isValid()) {
+                this->primary_id = -1;
+                return;
+            }
             this->primary_id = req.getFactoryId();
             this->committed_index = req.getCommittedIndex();
             this->last_index = req.getLastIndex();
@@ -117,14 +121,15 @@ void LaptopFactory::ProductionAdminThread() {
     }
 }
 
-// start connection as primary
 void LaptopFactory::startConnection() {
     this->primary_id = this->factory_id;
     for (int i = 0; i < this->peer_list.size(); i++) {
         Peer p = this->peer_list[i];
         std::unique_ptr<ClientStub> stub = std::unique_ptr<ClientStub>(new ClientStub);
         stub->Init(p.ip_addr, p.port);
-        stub->SendIdentification(2);
+        if (stub->isValid()) {
+            stub->SendIdentification(2);
+        }
         stubs.push_back(std::move(stub));
     }
 }
@@ -132,6 +137,17 @@ void LaptopFactory::startConnection() {
 void LaptopFactory::startReplication(ReplicationRequest request) {
     for (auto it = stubs.begin(); it != stubs.end(); ++it) {
         auto stub = it->get();
+        if (!stub->isValid()) {
+            stub->Reconnect();
+            if (!stub->isValid()) {
+                continue;
+            }
+            stub->SendIdentification(2);
+        }
         stub->startReplication(request);
     }
+}
+
+void LaptopFactory::startRecovery() {
+
 }
