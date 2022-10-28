@@ -11,6 +11,7 @@ LaptopInfo LaptopFactory::CreateRegularLaptop(LaptopOrder order, int engineer_id
     LaptopInfo laptop;
     laptop.CopyOrder(order);
     laptop.SetEngineerId(engineer_id);
+    laptop.SetAdminId(1);
 
     std::promise<CustomerRecord> prom;
     std::future<CustomerRecord> fut = prom.get_future();
@@ -122,6 +123,9 @@ void LaptopFactory::ProductionAdminThread() {
 }
 
 void LaptopFactory::startConnection() {
+    if (this->committed_index >= 0) {
+        this->committed_index++; // handle the subtle index change based on the change of primary node
+    }
     this->primary_id = this->factory_id;
     for (int i = 0; i < this->peer_list.size(); i++) {
         Peer p = this->peer_list[i];
@@ -143,11 +147,15 @@ void LaptopFactory::startReplication(ReplicationRequest request) {
                 continue;
             }
             stub->SendIdentification(2);
+            vector<MapOp> logs = server_storage.get_log();
+            for (int i = 0; i < logs.size(); i++) {
+                MapOp ops = logs[i];
+                ReplicationRequest req = ReplicationRequest(this->factory_id, this->committed_index,
+                                                            this->last_index,
+                                                            {1, ops.arg1, ops.arg2});
+                stub->startReplication(req);
+            }
         }
         stub->startReplication(request);
     }
-}
-
-void LaptopFactory::startRecovery() {
-
 }

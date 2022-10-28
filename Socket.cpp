@@ -1,11 +1,6 @@
 #include "Socket.h"
 
-#include <iostream>
-
 #include <assert.h>
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
 #include <arpa/inet.h>
@@ -59,7 +54,6 @@ int Socket::Recv(char *buffer, int size, int flags) {
                 continue;
             }
             */
-            //perror("ERROR: failed to recv");
             valid = false;
             Close();
             return 0;
@@ -78,7 +72,8 @@ int Socket::NagleOn(bool on_off) {
     int result = setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY,
                             (void *) &nagle_, sizeof(int));
     if (result < 0) {
-        perror("ERROR: setsockopt failed");
+        valid = false;
+        fd_ = -1;
         return 0;
     }
     return 1;
@@ -90,9 +85,8 @@ bool Socket::IsNagleOn() {
 
 void Socket::Close() {
     shutdown(fd_, SHUT_RDWR);
-    if (close(fd_) && errno == EBADF) {
-        //perror("Socket closed");
-    }
+    close(fd_);
+    fd_ = -1;
     is_initialized_ = false;
     return;
 }

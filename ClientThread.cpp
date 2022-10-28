@@ -31,7 +31,7 @@ void ClientThreadClass::ThreadBody(std::string ip, int port, int id, int orders,
         switch (laptop_type) {
             case 1: {
                 order.SetOrder(customer_id, i, laptop_type);
-                LaptopInfo laptop = stub.OrderLaptop(order);
+                LaptopInfo laptop = stub.Order(order);
                 if (!laptop.IsValid()) {
                     std::cout << "Invalid laptop " << customer_id << std::endl;
                     break;

@@ -14,9 +14,13 @@ private:
 public:
     ClientStub();
 
+    ~ClientStub() {
+        socket.Close();
+    }
+
     int Init(std::string ip, int port);
 
-    LaptopInfo OrderLaptop(LaptopOrder order);
+    LaptopInfo Order(LaptopOrder order);
 
     CustomerRecord ReadRecord(LaptopOrder request);
 

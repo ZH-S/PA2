@@ -21,7 +21,7 @@ void ClientStub::SendIdentification(int stat) {
     socket.Send(buf, sizeof(status), 0);
 }
 
-LaptopInfo ClientStub::OrderLaptop(LaptopOrder order) {
+LaptopInfo ClientStub::Order(LaptopOrder order) {
     LaptopInfo info;
     char buffer[32];
     int size;

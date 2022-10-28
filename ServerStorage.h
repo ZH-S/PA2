@@ -27,6 +27,8 @@ public:
 
     int read_record(int customer_id);
 
+    std::vector<MapOp> get_log() { return state_machine_log; }
+
     int getIdx() {
         return state_machine_log.size() - 1;
     }

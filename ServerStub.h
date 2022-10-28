@@ -12,6 +12,10 @@ private:
 public:
     ServerStub();
 
+    ~ServerStub() {
+        socket->Close();
+    }
+
     void Init(std::unique_ptr<ServerSocket> socket);
 
     LaptopOrder ReceiveOrderRequest();

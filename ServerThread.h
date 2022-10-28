@@ -69,7 +69,6 @@ public:
 
     void ProductionAdminThread();
 
-    void startRecovery();
 };
 
 #endif // end of #ifndef __SERVERTHREAD_H__
